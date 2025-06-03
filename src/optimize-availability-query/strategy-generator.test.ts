@@ -27,12 +27,13 @@ describe('Strategy Generator', () => {
       expect(maxChunkSize).toBeLessThanOrEqual(5);
     });
 
-    it('should filter out invalid concurrency combinations', () => {
-      const strategies = generateDefaultStrategies(2);
+    it('should use optimal concurrency based on number of queries', () => {
+      const strategies = generateDefaultStrategies(30);
       
       strategies.forEach(strategy => {
-        const totalQueries = Math.ceil(2 / strategy.daysPerQuery);
-        expect(strategy.concurrency).toBeLessThanOrEqual(totalQueries);
+        const totalQueries = Math.ceil(30 / strategy.daysPerQuery);
+        const expectedConcurrency = Math.min(totalQueries, 30); // 30 is maxConcurrency
+        expect(strategy.concurrency).toBe(expectedConcurrency);
       });
     });
 
@@ -50,11 +51,9 @@ describe('Strategy Generator', () => {
     it('should handle edge case of 1 day ahead', () => {
       const strategies = generateDefaultStrategies(1);
       
-      expect(strategies.length).toBeGreaterThan(0);
-      strategies.forEach(strategy => {
-        expect(strategy.daysPerQuery).toBe(1);
-        expect(strategy.concurrency).toBe(1);
-      });
+      expect(strategies.length).toBe(1);
+      expect(strategies[0].daysPerQuery).toBe(1);
+      expect(strategies[0].concurrency).toBe(1);
     });
 
     it('should include standard chunk sizes when applicable', () => {
@@ -66,17 +65,39 @@ describe('Strategy Generator', () => {
       expect(chunkSizes).toContain(14);
       expect(chunkSizes).toContain(30);
     });
+
+    it('should maximize parallelism for small chunks', () => {
+      const strategies = generateDefaultStrategies(30);
+      
+      // Find the 1-day strategy
+      const oneDayStrategy = strategies.find(s => s.daysPerQuery === 1);
+      expect(oneDayStrategy).toBeDefined();
+      expect(oneDayStrategy!.concurrency).toBe(30); // 30 queries, so concurrency = 30
+
+      // Find the 2-day strategy  
+      const twoDayStrategy = strategies.find(s => s.daysPerQuery === 2);
+      expect(twoDayStrategy).toBeDefined();
+      expect(twoDayStrategy!.concurrency).toBe(15); // 15 queries, so concurrency = 15
+    });
+
+    it('should cap concurrency at reasonable maximum', () => {
+      const strategies = generateDefaultStrategies(100); // Large number of days
+      
+      strategies.forEach(strategy => {
+        expect(strategy.concurrency).toBeLessThanOrEqual(30); // maxConcurrency cap
+      });
+    });
   });
 
   describe('getQuickStrategies', () => {
-    it('should return predefined quick strategies', () => {
+    it('should return predefined quick strategies with optimal concurrency', () => {
       const strategies = getQuickStrategies();
       
       expect(strategies).toHaveLength(5);
-      expect(strategies[0]).toEqual({ name: 'single-day-high', daysPerQuery: 1, concurrency: 15 });
+      expect(strategies[0]).toEqual({ name: 'single-day-high', daysPerQuery: 1, concurrency: 30 });
       expect(strategies[1]).toEqual({ name: 'three-day-high', daysPerQuery: 3, concurrency: 10 });
-      expect(strategies[2]).toEqual({ name: 'weekly-medium', daysPerQuery: 7, concurrency: 5 });
-      expect(strategies[3]).toEqual({ name: 'biweekly-low', daysPerQuery: 14, concurrency: 3 });
+      expect(strategies[2]).toEqual({ name: 'weekly-medium', daysPerQuery: 7, concurrency: 4 });
+      expect(strategies[3]).toEqual({ name: 'biweekly-low', daysPerQuery: 14, concurrency: 2 });
       expect(strategies[4]).toEqual({ name: 'monthly-single', daysPerQuery: 30, concurrency: 1 });
     });
 
@@ -92,7 +113,7 @@ describe('Strategy Generator', () => {
       const concurrencyLevels = strategies.map(s => s.concurrency);
       
       expect(Math.min(...concurrencyLevels)).toBe(1);
-      expect(Math.max(...concurrencyLevels)).toBe(15);
+      expect(Math.max(...concurrencyLevels)).toBe(30);
       expect(new Set(concurrencyLevels).size).toBeGreaterThan(1);
     });
 
@@ -103,6 +124,18 @@ describe('Strategy Generator', () => {
       expect(Math.min(...dayRanges)).toBe(1);
       expect(Math.max(...dayRanges)).toBe(30);
       expect(new Set(dayRanges).size).toBeGreaterThan(1);
+    });
+
+    it('should use logical concurrency ratios', () => {
+      const strategies = getQuickStrategies();
+      
+      // Single day should have highest concurrency for maximum parallelism
+      const singleDay = strategies.find(s => s.daysPerQuery === 1);
+      expect(singleDay!.concurrency).toBe(30);
+      
+      // Monthly should have lowest concurrency (only 1 query needed)
+      const monthly = strategies.find(s => s.daysPerQuery === 30);
+      expect(monthly!.concurrency).toBe(1);
     });
   });
 }); 

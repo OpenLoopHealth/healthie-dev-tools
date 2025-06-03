@@ -17,10 +17,10 @@ vi.mock('../src/optimize-availability-query', () => ({
     })
   })),
   getQuickStrategies: vi.fn().mockReturnValue([
-    { name: 'single-day-high', daysPerQuery: 1, concurrency: 15 },
+    { name: 'single-day-high', daysPerQuery: 1, concurrency: 30 },
     { name: 'three-day-high', daysPerQuery: 3, concurrency: 10 },
-    { name: 'weekly-medium', daysPerQuery: 7, concurrency: 5 },
-    { name: 'biweekly-low', daysPerQuery: 14, concurrency: 3 },
+    { name: 'weekly-medium', daysPerQuery: 7, concurrency: 4 },
+    { name: 'biweekly-low', daysPerQuery: 14, concurrency: 2 },
     { name: 'monthly-single', daysPerQuery: 30, concurrency: 1 }
   ])
 }));
@@ -36,24 +36,24 @@ describe('CLI Configuration Logic', () => {
       const strategies = getQuickStrategies();
       
       expect(strategies).toHaveLength(5);
-      expect(strategies[0]).toEqual({ name: 'single-day-high', daysPerQuery: 1, concurrency: 15 });
+      expect(strategies[0]).toEqual({ name: 'single-day-high', daysPerQuery: 1, concurrency: 30 });
     });
   });
 
   describe('Strategy Definitions', () => {
     it('should define correct quick strategies', () => {
       const quickStrategies = [
-        { name: 'single-day-high', daysPerQuery: 1, concurrency: 15 },
+        { name: 'single-day-high', daysPerQuery: 1, concurrency: 30 },
         { name: 'three-day-high', daysPerQuery: 3, concurrency: 10 },
-        { name: 'weekly-medium', daysPerQuery: 7, concurrency: 5 },
-        { name: 'biweekly-low', daysPerQuery: 14, concurrency: 3 },
+        { name: 'weekly-medium', daysPerQuery: 7, concurrency: 4 },
+        { name: 'biweekly-low', daysPerQuery: 14, concurrency: 2 },
         { name: 'monthly-single', daysPerQuery: 30, concurrency: 1 }
       ];
       
       expect(quickStrategies).toHaveLength(5);
       expect(quickStrategies[0].name).toBe('single-day-high');
       expect(quickStrategies[0].daysPerQuery).toBe(1);
-      expect(quickStrategies[0].concurrency).toBe(15);
+      expect(quickStrategies[0].concurrency).toBe(30);
     });
 
     it('should validate strategy properties', () => {

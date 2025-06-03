@@ -10,12 +10,65 @@ A TypeScript utility for finding the optimal strategy to query availability data
 - Automatically recommends the best strategy based on median performance
 - Saves detailed results to JSON for further analysis
 - Supports both quick tests and comprehensive optimization runs
+- **Includes production-ready client for easy implementation**
+
+## Quick Links
+
+- 🔧 [Run Optimization](#usage) - Find the best strategy for your use case
+- 📦 [Copy Production Client](#production-client) - Ready-to-use implementation
+- 📊 [Understanding Results](#understanding-the-results) - Interpret optimization output
 
 ## Installation
 
 ```bash
 npm install
 ```
+
+## Production Client
+
+**For immediate implementation**: Copy the complete availability client to your project:
+
+```bash
+cp -r src/availability-client ./your-project/src/
+```
+
+The client includes:
+- ✅ Optimized date range chunking with remainder handling
+- ✅ Controlled concurrency to maximize performance
+- ✅ Error handling and retry logic
+- ✅ Performance monitoring and timing
+- ✅ Rate limiting protection
+- ✅ TypeScript interfaces and full documentation
+
+### Quick Implementation
+
+```typescript
+import { AvailabilityClient } from './availability-client';
+
+const client = new AvailabilityClient({
+  endpoint: 'https://api.gethealthie.com/graphql',
+  headers: { 'Authorization': 'Bearer YOUR_TOKEN' },
+  daysPerQuery: 7,     // Use your optimization results
+  maxConcurrency: 4    // Use your optimization results
+});
+
+const results = await client.queryAvailability({
+  providerId: '123456',
+  appointmentTypeId: '789012',
+  state: 'CA',
+  timezone: 'America/Los_Angeles'
+}, 30);
+
+const availableSlots = results
+  .filter(result => result.data && !result.errors)
+  .flatMap(result => result.data.availableSlotsForRange);
+```
+
+**See [`src/availability-client/README.md`](src/availability-client/README.md) for complete documentation.**
+
+## Optimization Tool
+
+Use this tool to find the optimal settings for your specific environment before implementing the client.
 
 ## Configuration
 
