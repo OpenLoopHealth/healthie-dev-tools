@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { AvailabilityQueryOptimizer } from '../src/optimize-availability-query';
+import { AvailabilityQueryOptimizer, getQuickStrategies } from '../src/optimize-availability-query';
 import * as dotenv from 'dotenv';
 import { program } from 'commander';
 
@@ -50,13 +50,7 @@ async function main() {
   
   if (options.quick) {
     // Quick test with fewer strategies
-    strategies = [
-      { name: 'single-day-high', daysPerQuery: 1, concurrency: 15 },
-      { name: 'three-day-high', daysPerQuery: 3, concurrency: 10 },
-      { name: 'weekly-medium', daysPerQuery: 7, concurrency: 5 },
-      { name: 'biweekly-low', daysPerQuery: 14, concurrency: 3 },
-      { name: 'monthly-single', daysPerQuery: 30, concurrency: 1 }
-    ];
+    strategies = getQuickStrategies();
   } else {
     // Let the optimizer generate all combinations
     strategies = undefined;

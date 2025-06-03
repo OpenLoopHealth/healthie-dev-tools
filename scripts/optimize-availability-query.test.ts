@@ -15,7 +15,14 @@ vi.mock('../src/optimize-availability-query', () => ({
         metrics: { p50: 245, p99: 389 }
       }
     })
-  }))
+  })),
+  getQuickStrategies: vi.fn().mockReturnValue([
+    { name: 'single-day-high', daysPerQuery: 1, concurrency: 15 },
+    { name: 'three-day-high', daysPerQuery: 3, concurrency: 10 },
+    { name: 'weekly-medium', daysPerQuery: 7, concurrency: 5 },
+    { name: 'biweekly-low', daysPerQuery: 14, concurrency: 3 },
+    { name: 'monthly-single', daysPerQuery: 30, concurrency: 1 }
+  ])
 }));
 
 vi.mock('dotenv', () => ({
@@ -23,6 +30,16 @@ vi.mock('dotenv', () => ({
 }));
 
 describe('CLI Configuration Logic', () => {
+  describe('Quick Strategies Import', () => {
+    it('should import getQuickStrategies function correctly', async () => {
+      const { getQuickStrategies } = await import('../src/optimize-availability-query');
+      const strategies = getQuickStrategies();
+      
+      expect(strategies).toHaveLength(5);
+      expect(strategies[0]).toEqual({ name: 'single-day-high', daysPerQuery: 1, concurrency: 15 });
+    });
+  });
+
   describe('Strategy Definitions', () => {
     it('should define correct quick strategies', () => {
       const quickStrategies = [
@@ -69,18 +86,13 @@ describe('CLI Configuration Logic', () => {
       expect(options.endpoint).toBeUndefined();
     });
 
-    it('should validate strategy configuration logic', () => {
+    it('should validate strategy configuration logic', async () => {
+      const { getQuickStrategies } = await import('../src/optimize-availability-query');
       const isQuickMode = true;
       let strategies;
       
       if (isQuickMode) {
-        strategies = [
-          { name: 'single-day-high', daysPerQuery: 1, concurrency: 15 },
-          { name: 'three-day-high', daysPerQuery: 3, concurrency: 10 },
-          { name: 'weekly-medium', daysPerQuery: 7, concurrency: 5 },
-          { name: 'biweekly-low', daysPerQuery: 14, concurrency: 3 },
-          { name: 'monthly-single', daysPerQuery: 30, concurrency: 1 }
-        ];
+        strategies = getQuickStrategies();
       } else {
         strategies = undefined;
       }
@@ -157,12 +169,9 @@ describe('CLI Configuration Logic', () => {
       expect(config.strategies).toBeUndefined();
     });
 
-    it('should handle quick mode configuration', () => {
-      const quickStrategies = [
-        { name: 'single-day-high', daysPerQuery: 1, concurrency: 15 },
-        { name: 'weekly-medium', daysPerQuery: 7, concurrency: 5 },
-        { name: 'monthly-single', daysPerQuery: 30, concurrency: 1 }
-      ];
+    it('should handle quick mode configuration', async () => {
+      const { getQuickStrategies } = await import('../src/optimize-availability-query');
+      const quickStrategies = getQuickStrategies();
       
       const config = {
         endpoint: 'https://api.example.com/graphql',
@@ -178,7 +187,7 @@ describe('CLI Configuration Logic', () => {
         strategies: quickStrategies
       };
       
-      expect(config.strategies).toHaveLength(3);
+      expect(config.strategies).toHaveLength(5);
       expect(config.strategies![0].name).toBe('single-day-high');
     });
   });
