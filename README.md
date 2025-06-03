@@ -30,13 +30,13 @@ GRAPHQL_ENDPOINT=https://api.gethealthie.com/graphql
 ### Basic Usage
 
 ```bash
-npm start -- --endpoint https://api.gethealthie.com/graphql
+npm start -- --endpoint https://api.gethealthie.com/graphql --provider YOUR_PROVIDER_ID --appointment YOUR_APPOINTMENT_TYPE_ID
 ```
 
 ### Quick Test (Limited Strategies)
 
 ```bash
-npm run quick
+npm run quick -- --provider YOUR_PROVIDER_ID --appointment YOUR_APPOINTMENT_TYPE_ID
 ```
 
 ### Full Command Line Options
@@ -46,8 +46,8 @@ npm start -- [options]
 
 Options:
   -e, --endpoint <url>      GraphQL endpoint URL (or GRAPHQL_ENDPOINT env var)
-  -p, --provider <id>       Provider ID (default: "6775393")
-  -a, --appointment <id>    Appointment type ID (default: "436561")
+  -p, --provider <id>       Provider ID (required)
+  -a, --appointment <id>    Appointment type ID (required)
   -s, --state <code>        State code (default: "CA")
   -t, --timezone <tz>       Timezone (default: "America/Chicago")
   -d, --days <number>       Number of days to query ahead (default: "30")
@@ -59,14 +59,17 @@ Options:
 ### Examples
 
 ```bash
-# Basic optimization with default settings
-npm start -- --endpoint https://api.gethealthie.com/graphql
+# Basic optimization with required parameters
+npm start -- --endpoint https://api.gethealthie.com/graphql --provider 123456 --appointment 789012
 
 # Quick test with custom parameters
-npm start -- --endpoint https://api.gethealthie.com/graphql --provider 123456 --days 14 --quick
+npm start -- --endpoint https://api.gethealthie.com/graphql --provider 123456 --appointment 789012 --days 14 --quick
 
 # Full optimization with more iterations for accuracy
-npm start -- --endpoint https://api.gethealthie.com/graphql --iterations 10
+npm start -- --endpoint https://api.gethealthie.com/graphql --provider 123456 --appointment 789012 --iterations 10
+
+# Using environment variable for endpoint
+GRAPHQL_ENDPOINT=https://api.gethealthie.com/graphql npm start -- --provider 123456 --appointment 789012 --state NY --timezone America/New_York
 ```
 
 ## Understanding the Results
@@ -146,3 +149,4 @@ These files contain:
 - **Network Timeouts**: Reduce concurrency levels
 - **Rate Limiting**: Add delays between iterations or reduce concurrency
 - **Memory Issues**: Test with fewer strategies using `--quick`
+- **Missing Parameters**: Ensure provider ID and appointment type ID are provided

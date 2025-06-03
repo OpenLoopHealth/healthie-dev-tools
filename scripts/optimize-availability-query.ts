@@ -12,8 +12,8 @@ program
   .name('query-optimizer')
   .description('Optimize GraphQL query performance by testing different strategies')
   .option('-e, --endpoint <url>', 'GraphQL endpoint URL', process.env.GRAPHQL_ENDPOINT)
-  .option('-p, --provider <id>', 'Provider ID', '6775393')
-  .option('-a, --appointment <id>', 'Appointment type ID', '436561')
+  .option('-p, --provider <id>', 'Provider ID (required)')
+  .option('-a, --appointment <id>', 'Appointment type ID (required)')
   .option('-s, --state <code>', 'State code', 'CA')
   .option('-t, --timezone <tz>', 'Timezone', 'America/Chicago')
   .option('-d, --days <number>', 'Number of days to query ahead', '30')
@@ -27,6 +27,16 @@ async function main() {
   // Validate required parameters
   if (!options.endpoint) {
     console.error('Error: GraphQL endpoint is required (--endpoint or GRAPHQL_ENDPOINT env var)');
+    process.exit(1);
+  }
+
+  if (!options.provider) {
+    console.error('Error: Provider ID is required (--provider)');
+    process.exit(1);
+  }
+
+  if (!options.appointment) {
+    console.error('Error: Appointment type ID is required (--appointment)');
     process.exit(1);
   }
 

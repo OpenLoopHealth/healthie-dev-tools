@@ -80,10 +80,16 @@ describe('CLI Configuration Logic', () => {
     });
 
     it('should handle missing endpoint scenario', () => {
-      const options: { provider: string; endpoint?: string } = { provider: '123' };
+      const options: { endpoint?: string } = {};
       
-      expect(options.provider).toBe('123');
       expect(options.endpoint).toBeUndefined();
+    });
+
+    it('should handle missing required parameters', () => {
+      const options: { provider?: string; appointment?: string } = {};
+      
+      expect(options.provider).toBeUndefined();
+      expect(options.appointment).toBeUndefined();
     });
 
     it('should validate strategy configuration logic', async () => {
@@ -102,22 +108,22 @@ describe('CLI Configuration Logic', () => {
   });
 
   describe('Option Parsing Logic', () => {
-    it('should handle default values correctly', () => {
-      const defaultOptions = {
-        provider: '6775393',
-        appointment: '436561',
-        state: 'CA',
-        timezone: 'America/Chicago',
-        days: '30',
-        iterations: '5'
+    it('should handle provided values correctly', () => {
+      const providedOptions = {
+        provider: 'custom-provider-123',
+        appointment: 'custom-appointment-456',
+        state: 'NY',
+        timezone: 'America/New_York',
+        days: '14',
+        iterations: '3'
       };
       
-      expect(defaultOptions.provider).toBe('6775393');
-      expect(defaultOptions.appointment).toBe('436561');
-      expect(defaultOptions.state).toBe('CA');
-      expect(defaultOptions.timezone).toBe('America/Chicago');
-      expect(defaultOptions.days).toBe('30');
-      expect(defaultOptions.iterations).toBe('5');
+      expect(providedOptions.provider).toBe('custom-provider-123');
+      expect(providedOptions.appointment).toBe('custom-appointment-456');
+      expect(providedOptions.state).toBe('NY');
+      expect(providedOptions.timezone).toBe('America/New_York');
+      expect(providedOptions.days).toBe('14');
+      expect(providedOptions.iterations).toBe('3');
     });
 
     it('should parse integer values correctly', () => {
@@ -146,12 +152,12 @@ describe('CLI Configuration Logic', () => {
   });
 
   describe('Optimizer Configuration', () => {
-    it('should create valid optimizer config', () => {
+    it('should create valid optimizer config with required parameters', () => {
       const config = {
         endpoint: 'https://api.example.com/graphql',
         baseVariables: {
-          providerId: '6775393',
-          appointmentTypeId: '436561',
+          providerId: 'required-provider-123',
+          appointmentTypeId: 'required-appointment-456',
           state: 'CA',
           timezone: 'America/Chicago'
         },
@@ -162,7 +168,8 @@ describe('CLI Configuration Logic', () => {
       };
       
       expect(config.endpoint).toBe('https://api.example.com/graphql');
-      expect(config.baseVariables.providerId).toBe('6775393');
+      expect(config.baseVariables.providerId).toBe('required-provider-123');
+      expect(config.baseVariables.appointmentTypeId).toBe('required-appointment-456');
       expect(config.daysAhead).toBe(30);
       expect(config.iterations).toBe(5);
       expect(config.headers).toHaveProperty('Content-Type');
@@ -176,8 +183,8 @@ describe('CLI Configuration Logic', () => {
       const config = {
         endpoint: 'https://api.example.com/graphql',
         baseVariables: {
-          providerId: '6775393',
-          appointmentTypeId: '436561',
+          providerId: 'test-provider',
+          appointmentTypeId: 'test-appointment',
           state: 'CA',
           timezone: 'America/Chicago'
         },
