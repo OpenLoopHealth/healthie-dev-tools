@@ -4,6 +4,8 @@
   "description": "Tools for building & testing against Healthie during development",
   "main": "index.ts",
   "scripts": {
+    "start": "tsx scripts/optimize-availability-query.ts",
+    "quick": "tsx scripts/optimize-availability-query.ts --quick",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -11,5 +13,10 @@
   "devDependencies": {
     "@types/node": "^22.15.29",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "dotenv": "^16.5.0",
+    "tsx": "^4.19.2"
   }
 }
