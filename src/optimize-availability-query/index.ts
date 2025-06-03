@@ -44,27 +44,16 @@ interface StrategyResult {
 }
 
 interface OptimizerConfig {
-  // GraphQL endpoint
   endpoint: string;
-  
-  // Base query variables (without dates)
   baseVariables: {
     appointmentTypeId: string;
     providerId: string;
     state: string;
     timezone: string;
   };
-  
-  // Number of days to query ahead
   daysAhead: number;
-  
-  // Number of iterations per strategy for statistical significance
   iterations: number;
-  
-  // Optional custom headers
   headers?: Record<string, string>;
-  
-  // Optional custom strategies to test
   strategies?: Array<{
     name: string;
     daysPerQuery: number;
@@ -79,9 +68,6 @@ class AvailabilityQueryOptimizer {
     this.config = config;
   }
   
-  /**
-   * Generate date ranges for a given chunk size
-   */
   private generateDateRanges(daysPerChunk: number): Array<{ start: string; end: string }> {
     const ranges: Array<{ start: string; end: string }> = [];
     const today = new Date();
@@ -95,7 +81,6 @@ class AvailabilityQueryOptimizer {
       const currentEnd = new Date(currentStart);
       currentEnd.setDate(currentEnd.getDate() + daysPerChunk - 1);
       
-      // Don't exceed the final end date
       if (currentEnd > finalEnd) {
         currentEnd.setTime(finalEnd.getTime());
       }
@@ -112,9 +97,6 @@ class AvailabilityQueryOptimizer {
     return ranges;
   }
   
-  /**
-   * Format date as YYYY-MM-DD
-   */
   private formatDate(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -122,9 +104,6 @@ class AvailabilityQueryOptimizer {
     return `${year}-${month}-${day}`;
   }
   
-  /**
-   * Execute a single GraphQL query
-   */
   private async executeQuery(variables: QueryVariables): Promise<QueryResult> {
     const query = `
       query AvailableSlots(
@@ -175,9 +154,6 @@ class AvailabilityQueryOptimizer {
     return data.data;
   }
   
-  /**
-   * Execute queries with concurrency limit
-   */
   private async executeQueriesWithConcurrency(
     ranges: Array<{ start: string; end: string }>,
     concurrency: number
@@ -186,7 +162,6 @@ class AvailabilityQueryOptimizer {
     const results: QueryResult[] = [];
     const errors: Error[] = [];
     
-    // Create a queue of query promises
     const queryPromises = ranges.map(range => async () => {
       const variables: QueryVariables = {
         startDate: range.start,
@@ -202,7 +177,6 @@ class AvailabilityQueryOptimizer {
       }
     });
     
-    // Execute with concurrency limit
     const inFlight: Promise<void>[] = [];
     
     for (const queryPromise of queryPromises) {
@@ -217,7 +191,6 @@ class AvailabilityQueryOptimizer {
       inFlight.push(promise);
     }
     
-    // Wait for all remaining queries
     await Promise.all(inFlight);
     
     const endTime = performance.now();
@@ -232,9 +205,6 @@ class AvailabilityQueryOptimizer {
     };
   }
   
-  /**
-   * Calculate percentiles from an array of numbers
-   */
   private calculatePercentiles(values: number[]): PerformanceMetrics {
     const sorted = [...values].sort((a, b) => a - b);
     const len = sorted.length;
@@ -270,9 +240,6 @@ class AvailabilityQueryOptimizer {
     };
   }
   
-  /**
-   * Test a specific strategy
-   */
   private async testStrategy(
     name: string,
     daysPerQuery: number,
@@ -288,7 +255,6 @@ class AvailabilityQueryOptimizer {
     console.log(`  - Concurrency: ${concurrency}`);
     console.log(`  - Iterations: ${this.config.iterations}`);
     
-    // Run multiple iterations
     for (let i = 0; i < this.config.iterations; i++) {
       process.stdout.write(`  - Iteration ${i + 1}/${this.config.iterations}...`);
       
@@ -320,22 +286,15 @@ class AvailabilityQueryOptimizer {
     };
   }
   
-  /**
-   * Generate default strategies based on the number of days
-   */
   private generateDefaultStrategies(): Array<{ name: string; daysPerQuery: number; concurrency: number }> {
     const strategies: Array<{ name: string; daysPerQuery: number; concurrency: number }> = [];
     
-    // Test different chunk sizes
     const chunkSizes = [1, 2, 3, 5, 7, 10, 14, 21, 30].filter(size => size <= this.config.daysAhead);
     
-    // Test different concurrency levels
     const concurrencyLevels = [1, 3, 5, 10, 20];
     
-    // Generate combinations
     for (const chunkSize of chunkSizes) {
       for (const concurrency of concurrencyLevels) {
-        // Skip combinations that don't make sense
         const totalQueries = Math.ceil(this.config.daysAhead / chunkSize);
         if (concurrency > totalQueries) continue;
         
@@ -350,9 +309,6 @@ class AvailabilityQueryOptimizer {
     return strategies;
   }
   
-  /**
-   * Run the optimization process
-   */
   async optimize(): Promise<{
     results: StrategyResult[];
     recommendation: StrategyResult;
@@ -376,10 +332,8 @@ class AvailabilityQueryOptimizer {
       results.push(result);
     }
     
-    // Sort by p50 (median) performance
     results.sort((a, b) => a.metrics.p50 - b.metrics.p50);
     
-    // Print results
     console.log('\n=== Results Summary ===\n');
     console.log('Strategy         | Queries | Days/Q | Conc | p50 (ms) | p90 (ms) | p99 (ms) | Mean (ms) | Errors');
     console.log('-----------------|---------|--------|------|----------|----------|----------|-----------|-------');
@@ -398,7 +352,6 @@ class AvailabilityQueryOptimizer {
       );
     }
     
-    // Find the best strategy (considering both performance and reliability)
     const recommendation = results.find(r => r.errors === 0) || results[0];
     
     console.log('\n=== Recommendation ===');
@@ -408,7 +361,6 @@ class AvailabilityQueryOptimizer {
     console.log(`  - Median response time: ${recommendation.metrics.p50.toFixed(2)}ms`);
     console.log(`  - 99th percentile: ${recommendation.metrics.p99.toFixed(2)}ms`);
     
-    // Save results to file
     const fs = await import('fs/promises');
     const resultsPath = `./optimization-results-${new Date().toISOString().split('T')[0]}.json`;
     await fs.writeFile(resultsPath, JSON.stringify({
@@ -426,5 +378,4 @@ class AvailabilityQueryOptimizer {
   }
 }
 
-// Export for use as a module
 export { AvailabilityQueryOptimizer, OptimizerConfig, StrategyResult, PerformanceMetrics };

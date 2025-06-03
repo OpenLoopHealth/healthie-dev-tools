@@ -6,13 +6,17 @@
   "scripts": {
     "start": "tsx scripts/optimize-availability-query.ts",
     "quick": "tsx scripts/optimize-availability-query.ts --quick",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.15.29",
-    "typescript": "^5.8.3"
+    "@vitest/ui": "^2.1.8",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.8"
   },
   "dependencies": {
     "commander": "^14.0.0",
