@@ -184,14 +184,16 @@ const strategies = [
 
 ## Output Files
 
-Results are automatically saved to timestamped JSON files:
-- `optimization-results-YYYY-MM-DD.json`
+Results are automatically saved to timestamped JSON files in the `results/` directory:
+- `results/optimization-results-YYYY-MM-DD_HH-MM-SS.json`
 
 These files contain:
 - Complete configuration used
 - Detailed metrics for all strategies
 - The recommended strategy
 - All raw measurements
+
+The `results/` directory is automatically created and is included in `.gitignore` to avoid committing optimization data to version control.
 
 ## Tips for Best Results
 

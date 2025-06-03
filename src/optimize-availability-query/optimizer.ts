@@ -116,7 +116,12 @@ export class AvailabilityQueryOptimizer {
     console.log(`  - 99th percentile: ${recommendation.metrics.p99.toFixed(2)}ms`);
     
     const fs = await import('fs/promises');
-    const resultsPath = `./optimization-results-${new Date().toISOString().split('T')[0]}.json`;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').split('.')[0];
+    const resultsPath = `./results/optimization-results-${timestamp}.json`;
+    
+    // Ensure results directory exists
+    await fs.mkdir('./results', { recursive: true });
+    
     await fs.writeFile(resultsPath, JSON.stringify({
       timestamp: new Date().toISOString(),
       config: this.config,

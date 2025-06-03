@@ -39,7 +39,8 @@ vi.mock('./strategy-generator', () => ({
 
 // Mock file system operations
 vi.mock('fs/promises', () => ({
-  writeFile: vi.fn(() => Promise.resolve(undefined))
+  writeFile: vi.fn(() => Promise.resolve(undefined)),
+  mkdir: vi.fn(() => Promise.resolve(undefined))
 }));
 
 global.fetch = vi.fn();
@@ -152,8 +153,9 @@ describe('AvailabilityQueryOptimizer', () => {
       
       await optimizer.optimize();
 
+      expect(fs.mkdir).toHaveBeenCalledWith('./results', { recursive: true });
       expect(fs.writeFile).toHaveBeenCalledWith(
-        expect.stringMatching(/^\.\/optimization-results-\d{4}-\d{2}-\d{2}\.json$/),
+        expect.stringMatching(/^\.\/results\/optimization-results-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}Z\.json$/),
         expect.stringContaining('"timestamp"')
       );
     });

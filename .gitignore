@@ -6,3 +6,6 @@ node_modules
 .env.production.local
 
 .DS_Store
+
+# Optimization results
+results/
