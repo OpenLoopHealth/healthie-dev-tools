@@ -79,10 +79,19 @@ describe('CLI Configuration Logic', () => {
       expect(headers['Content-Type']).toBe('application/json');
     });
 
-    it('should handle missing endpoint scenario', () => {
+    it('should use default endpoint when not provided', () => {
+      const defaultEndpoint = 'https://api.gethealthie.com/graphql';
       const options: { endpoint?: string } = {};
+      const endpoint = options.endpoint || defaultEndpoint;
       
-      expect(options.endpoint).toBeUndefined();
+      expect(endpoint).toBe('https://api.gethealthie.com/graphql');
+    });
+
+    it('should allow custom endpoint override', () => {
+      const customEndpoint = 'https://staging-api.gethealthie.com/graphql';
+      const options = { endpoint: customEndpoint };
+      
+      expect(options.endpoint).toBe(customEndpoint);
     });
 
     it('should handle missing required parameters', () => {
@@ -136,11 +145,11 @@ describe('CLI Configuration Logic', () => {
   });
 
   describe('Environment Variables', () => {
-    it('should use GRAPHQL_ENDPOINT environment variable as fallback', () => {
+    it('should use GRAPHQL_ENDPOINT environment variable when set', () => {
       const originalEnv = process.env.GRAPHQL_ENDPOINT;
       process.env.GRAPHQL_ENDPOINT = 'https://env.test.com/graphql';
       
-      const endpoint = process.env.GRAPHQL_ENDPOINT;
+      const endpoint = process.env.GRAPHQL_ENDPOINT || 'https://api.gethealthie.com/graphql';
       expect(endpoint).toBe('https://env.test.com/graphql');
       
       if (originalEnv !== undefined) {
@@ -149,12 +158,24 @@ describe('CLI Configuration Logic', () => {
         delete process.env.GRAPHQL_ENDPOINT;
       }
     });
+
+    it('should fall back to default endpoint when env var not set', () => {
+      const originalEnv = process.env.GRAPHQL_ENDPOINT;
+      delete process.env.GRAPHQL_ENDPOINT;
+      
+      const endpoint = process.env.GRAPHQL_ENDPOINT || 'https://api.gethealthie.com/graphql';
+      expect(endpoint).toBe('https://api.gethealthie.com/graphql');
+      
+      if (originalEnv !== undefined) {
+        process.env.GRAPHQL_ENDPOINT = originalEnv;
+      }
+    });
   });
 
   describe('Optimizer Configuration', () => {
     it('should create valid optimizer config with required parameters', () => {
       const config = {
-        endpoint: 'https://api.example.com/graphql',
+        endpoint: 'https://api.gethealthie.com/graphql',
         baseVariables: {
           providerId: 'required-provider-123',
           appointmentTypeId: 'required-appointment-456',
@@ -167,7 +188,7 @@ describe('CLI Configuration Logic', () => {
         strategies: undefined
       };
       
-      expect(config.endpoint).toBe('https://api.example.com/graphql');
+      expect(config.endpoint).toBe('https://api.gethealthie.com/graphql');
       expect(config.baseVariables.providerId).toBe('required-provider-123');
       expect(config.baseVariables.appointmentTypeId).toBe('required-appointment-456');
       expect(config.daysAhead).toBe(30);
@@ -181,7 +202,7 @@ describe('CLI Configuration Logic', () => {
       const quickStrategies = getQuickStrategies();
       
       const config = {
-        endpoint: 'https://api.example.com/graphql',
+        endpoint: 'https://api.gethealthie.com/graphql',
         baseVariables: {
           providerId: 'test-provider',
           appointmentTypeId: 'test-appointment',

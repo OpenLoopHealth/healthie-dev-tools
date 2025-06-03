@@ -19,10 +19,10 @@ npm install
 
 ## Configuration
 
-Create a `.env` file in the project root:
+Optionally create a `.env` file in the project root to override the default endpoint:
 
 ```env
-GRAPHQL_ENDPOINT=https://api.gethealthie.com/graphql
+GRAPHQL_ENDPOINT=https://staging-api.gethealthie.com/graphql
 ```
 
 ## Usage
@@ -30,22 +30,22 @@ GRAPHQL_ENDPOINT=https://api.gethealthie.com/graphql
 ### Basic Usage
 
 ```bash
-npm start -- --endpoint https://api.gethealthie.com/graphql --provider YOUR_PROVIDER_ID --appointment YOUR_APPOINTMENT_TYPE_ID
+npm run optimize:availability -- --provider YOUR_PROVIDER_ID --appointment YOUR_APPOINTMENT_TYPE_ID
 ```
 
 ### Quick Test (Limited Strategies)
 
 ```bash
-npm run quick -- --provider YOUR_PROVIDER_ID --appointment YOUR_APPOINTMENT_TYPE_ID
+npm run optimize:availability:quick -- --provider YOUR_PROVIDER_ID --appointment YOUR_APPOINTMENT_TYPE_ID
 ```
 
 ### Full Command Line Options
 
 ```bash
-npm start -- [options]
+npm run optimize:availability -- [options]
 
 Options:
-  -e, --endpoint <url>      GraphQL endpoint URL (or GRAPHQL_ENDPOINT env var)
+  -e, --endpoint <url>      GraphQL endpoint URL (default: "https://api.gethealthie.com/graphql", or GRAPHQL_ENDPOINT env var)
   -p, --provider <id>       Provider ID (required)
   -a, --appointment <id>    Appointment type ID (required)
   -s, --state <code>        State code (default: "CA")
@@ -59,17 +59,20 @@ Options:
 ### Examples
 
 ```bash
-# Basic optimization with required parameters
-npm start -- --endpoint https://api.gethealthie.com/graphql --provider 123456 --appointment 789012
+# Basic optimization (uses production API by default)
+npm run optimize:availability -- --provider 123456 --appointment 789012
 
 # Quick test with custom parameters
-npm start -- --endpoint https://api.gethealthie.com/graphql --provider 123456 --appointment 789012 --days 14 --quick
+npm run optimize:availability -- --provider 123456 --appointment 789012 --days 14 --quick
 
 # Full optimization with more iterations for accuracy
-npm start -- --endpoint https://api.gethealthie.com/graphql --provider 123456 --appointment 789012 --iterations 10
+npm run optimize:availability -- --provider 123456 --appointment 789012 --iterations 10
 
-# Using environment variable for endpoint
-GRAPHQL_ENDPOINT=https://api.gethealthie.com/graphql npm start -- --provider 123456 --appointment 789012 --state NY --timezone America/New_York
+# Using custom endpoint (e.g., staging environment)
+npm run optimize:availability -- --endpoint https://staging-api.gethealthie.com/graphql --provider 123456 --appointment 789012
+
+# Using environment variable for custom endpoint
+GRAPHQL_ENDPOINT=https://staging-api.gethealthie.com/graphql npm run optimize:availability -- --provider 123456 --appointment 789012 --state NY --timezone America/New_York
 ```
 
 ## Understanding the Results

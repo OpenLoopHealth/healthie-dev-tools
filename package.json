@@ -4,8 +4,8 @@
   "description": "Tools for building & testing against Healthie during development",
   "main": "index.ts",
   "scripts": {
-    "start": "tsx scripts/optimize-availability-query.ts",
-    "quick": "tsx scripts/optimize-availability-query.ts --quick",
+    "optimize:availability": "tsx scripts/optimize-availability-query.ts",
+    "optimize:availability:quick": "tsx scripts/optimize-availability-query.ts --quick",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run"

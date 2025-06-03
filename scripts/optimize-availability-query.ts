@@ -11,7 +11,7 @@ dotenv.config();
 program
   .name('query-optimizer')
   .description('Optimize GraphQL query performance by testing different strategies')
-  .option('-e, --endpoint <url>', 'GraphQL endpoint URL', process.env.GRAPHQL_ENDPOINT)
+  .option('-e, --endpoint <url>', 'GraphQL endpoint URL', process.env.GRAPHQL_ENDPOINT || 'https://api.gethealthie.com/graphql')
   .option('-p, --provider <id>', 'Provider ID (required)')
   .option('-a, --appointment <id>', 'Appointment type ID (required)')
   .option('-s, --state <code>', 'State code', 'CA')
@@ -25,11 +25,6 @@ const options = program.opts();
 
 async function main() {
   // Validate required parameters
-  if (!options.endpoint) {
-    console.error('Error: GraphQL endpoint is required (--endpoint or GRAPHQL_ENDPOINT env var)');
-    process.exit(1);
-  }
-
   if (!options.provider) {
     console.error('Error: Provider ID is required (--provider)');
     process.exit(1);
