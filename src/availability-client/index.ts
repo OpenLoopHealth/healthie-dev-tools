@@ -43,6 +43,32 @@ export class AvailabilityClient {
         ...config.headers
       }
     };
+
+    // Validate the endpoint at construction so a malformed or unexpected-scheme
+    // URL can never reach the fetch() call. If this module is copied into an app
+    // that derives the endpoint from less-trusted input, this guards against SSRF
+    // via schemes like file:, gopher: or data: (CWE-918).
+    this.config.endpoint = AvailabilityClient.validateEndpoint(this.config.endpoint);
+  }
+
+  /**
+   * Ensure the configured endpoint is a well-formed absolute http(s) URL.
+   * Throws on anything else. Returns the original string unchanged so the exact
+   * endpoint the caller provided is what gets used.
+   */
+  private static validateEndpoint(endpoint: string): string {
+    let url: URL;
+    try {
+      url = new URL(endpoint);
+    } catch {
+      throw new Error(`Invalid endpoint URL: ${String(endpoint)}`);
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new Error(
+        `Unsupported endpoint protocol "${url.protocol}"; only http and https are allowed.`
+      );
+    }
+    return endpoint;
   }
 
   /**
