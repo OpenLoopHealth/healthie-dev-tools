@@ -39,6 +39,40 @@ describe('AvailabilityClient', () => {
     });
   });
 
+  describe('Endpoint validation (SSRF guard)', () => {
+    it('should accept valid http and https endpoints', () => {
+      expect(() => new AvailabilityClient({ endpoint: 'https://api.test.com/graphql' })).not.toThrow();
+      expect(() => new AvailabilityClient({ endpoint: 'http://localhost:3000/graphql' })).not.toThrow();
+    });
+
+    it('should reject endpoints with a non-http(s) scheme', () => {
+      expect(() => new AvailabilityClient({ endpoint: 'file:///etc/passwd' })).toThrow(/protocol/i);
+      expect(() => new AvailabilityClient({ endpoint: 'gopher://169.254.169.254:70/' })).toThrow(/protocol/i);
+      expect(() => new AvailabilityClient({ endpoint: 'data:text/plain,hello' })).toThrow(/protocol/i);
+    });
+
+    it('should reject malformed endpoint URLs', () => {
+      expect(() => new AvailabilityClient({ endpoint: 'not a url' })).toThrow(/invalid endpoint/i);
+      expect(() => new AvailabilityClient({ endpoint: '/relative/path' })).toThrow(/invalid endpoint/i);
+    });
+
+    it('should use the caller-provided endpoint unchanged for requests', async () => {
+      const client = new AvailabilityClient({ endpoint: 'https://api.test.com/graphql' });
+      const mockResponse = {
+        ok: true,
+        json: () => Promise.resolve({ data: { availableSlotsForRange: [] } })
+      };
+      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+
+      await client.queryAvailability(
+        { providerId: '1', appointmentTypeId: '2', state: 'CA', timezone: 'America/Los_Angeles' },
+        7
+      );
+
+      expect(fetch).toHaveBeenCalledWith('https://api.test.com/graphql', expect.anything());
+    });
+  });
+
   describe('Date Range Generation', () => {
     it('should handle remainders correctly', async () => {
       const mockResponse = {
